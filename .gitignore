@@ -1,17 +1,18 @@
-# Python virtual env
+# Python
 venv/
 .venv/
-
-# Cache
 __pycache__/
 *.pyc
 
-# ML models & data (VERY IMPORTANT)
+# ML models & data
 *.h5
-*.pkl
 *.pt
+*.pkl
 *.csv
 *.zip
+
+# Uploads
+static/uploads/
 
 # Node (if any)
 node_modules/
