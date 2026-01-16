@@ -4,3 +4,4 @@ numpy
 Pillow
 openai
 python-dotenv
+gunicorn
