@@ -1,0 +1,54 @@
+<!-- templates/result.html -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Prediction Result</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet"/>
+  <style>
+    body { background: linear-gradient(135deg,#071423,#0f2b36); color:#e8f6f8; font-family: Inter, sans-serif; }
+    .container { max-width:920px; margin-top:36px; }
+    .card { background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.04); }
+    .result-badge { font-weight:700; padding:6px 10px; border-radius:8px; }
+    .normal { background: rgba(20,180,140,0.12); color:#9df3d1; }
+    .fractured { background: rgba(255,90,90,0.12); color:#ffb3b3; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="/" class="btn btn-link text-white mb-3">← Back to Dashboard</a>
+    <div class="card p-4">
+      <div class="row g-3">
+        <div class="col-md-5">
+          <img src="{{ image_path }}" alt="uploaded xray" class="img-fluid rounded" style="max-height:520px; object-fit:contain; background:#071423; padding:8px;"/>
+        </div>
+        <div class="col-md-7">
+          <h3 class="mb-2">Analysis Result</h3>
+
+          <div class="mb-2"><strong>Patient:</strong> <span id="resultPatient">{{ patient_name or 'Uploaded Patient' }}</span></div>
+
+          <div class="mb-3">
+            <div class="result-badge {{ 'normal' if prediction=='Normal' else 'fractured' }}">{{ prediction }}</div>
+          </div>
+
+          <p><strong>Confidence:</strong> {{ accuracy }}%</p>
+          <p><strong>Date:</strong> {{ current_date }}</p>
+
+          <h5>Doctor's Note</h5>
+          <p class="text-muted">{{ doctor_note }}</p>
+
+          <div class="mt-4 d-flex gap-2">
+            <a href="/download_report?prediction={{ prediction }}&accuracy={{ accuracy }}&image_path={{ image_path }}&current_date={{ current_date }}&patient_name={{ patient_name|urlencode }}" class="btn btn-outline-light">
+              <i class="bi bi-download"></i> Download PDF Report
+            </a>
+            <a href="/" class="btn btn-light text-dark">Analyze Another</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <footer class="text-center text-muted mt-4">© {{ current_date.split()[-1] }} X-ray AI</footer>
+  </div>
+</body>
+</html>

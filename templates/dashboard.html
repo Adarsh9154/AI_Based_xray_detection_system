@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>X-ray AI – Fracture Detection</title>
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700;900&display=swap" rel="stylesheet">
+
+  <!-- Bootstrap + Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet"/>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Custom styles -->
+  
+</head>
+
+<body>
+  <div class="app d-flex">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="brand px-3 pt-3 pb-2 d-flex align-items-center gap-3">
+        <div class="brand-bubble"><i class="bi bi-radioactive"></i></div>
+        <div>
+          <div class="brand-title">X-ray AI</div>
+          <div class="brand-sub">Fracture Detection</div>
+        </div>
+      </div>
+
+      <nav class="nav flex-column px-2 mt-4">
+        <a class="nav-link active" href="#"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a>
+        <a class="nav-link" href="#"><i class="bi bi-people me-2"></i>Patients</a>
+        <a class="nav-link" href="#"><i class="bi bi-file-medical me-2"></i>Scans</a>
+        <a class="nav-link" href="#"><i class="bi bi-gear me-2"></i>Settings</a>
+      </nav>
+
+      <div class="sidebar-cta mt-auto px-3 pb-4">
+        <div class="model-status p-3 d-flex justify-content-between align-items-center">
+          <div>
+            <div class="fw-bold">v1.3 • production</div>
+            <div class="small muted">Last retrain: 3 days ago</div>
+          </div>
+          <div class="status-pill">94.2%</div>
+        </div>
+        <div class="small muted mt-3">Need help? <a href="#" class="link-light">Support</a></div>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main flex-fill">
+      <div class="container-fluid py-3">
+
+        <!-- HEADER (centered title) -->
+        <div class="header text-center mb-4">
+          <h1 class="display-6 fw-extrabold">X-ray AI — Fracture Detection</h1>
+          <div class="subtitle muted">Clinical fracture detection &amp; analytics</div>
+        </div>
+
+        <!-- KPI row -->
+        <div class="row gx-3 mb-4">
+          <div class="col-6 col-md-3">
+            <div class="card kpi-card glass">
+              <small class="muted">Total Scans</small>
+              <div id="kpiTotal" class="kpi-number">—</div>
+              <canvas id="sparkTotal" height="40" class="spark-canvas"></canvas>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="card kpi-card glass">
+              <small class="muted">Fractures</small>
+              <div id="kpiFractures" class="kpi-number">—</div>
+              <canvas id="sparkFract" height="40" class="spark-canvas"></canvas>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="card kpi-card glass">
+              <small class="muted">Model Accuracy</small>
+              <div id="kpiAcc" class="kpi-number">—</div>
+              <canvas id="sparkAcc" height="40" class="spark-canvas"></canvas>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="card kpi-card glass">
+              <small class="muted">Avg. Latency</small>
+              <div id="kpiLatency" class="kpi-number">—</div>
+              <canvas id="sparkLat" height="40" class="spark-canvas"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="row gx-3">
+          <!-- Recent activity -->
+          <div class="col-lg-8">
+            <div class="card glass p-3 mb-3">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <h5 class="mb-0">Recent Activity</h5>
+                <div class="muted">Most recent scans</div>
+              </div>
+
+              <div class="table-responsive">
+                <table class="table table-borderless align-middle">
+                  <thead>
+                    <tr>
+                      <th>Scan ID</th>
+                      <th>Patient</th>
+                      <th>Result</th>
+                      <th>Confidence</th>
+                      <th>Time</th>
+                    </tr>
+                  </thead>
+                  <tbody id="recentTbody"></tbody>
+                </table>
+              </div>
+
+              <div class="d-flex justify-content-between mt-2">
+                <div id="rowsCount" class="muted small"></div>
+                <div>
+                  <button id="prevPage" class="btn btn-sm btn-outline-light">Prev</button>
+                  <span id="pageInfo" class="mx-2 small"></span>
+                  <button id="nextPage" class="btn btn-sm btn-outline-light">Next</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Main volume chart with gradient -->
+            <div class="card glass p-3">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <h5 class="mb-0">Weekly Scan Volume</h5>
+                <div class="muted small">Last 7 days</div>
+              </div>
+              <canvas id="volumeChart" style="height:260px;"></canvas>
+            </div>
+          </div>
+
+          <!-- Upload panel -->
+          <div class="col-lg-4">
+            <div class="upload-card card glass p-3 mb-3">
+              <h5>Upload &amp; Analyze</h5>
+              <p class="muted small mb-2">Choose a bone X-ray image & enter patient name</p>
+
+              <form id="uploadForm" action="/predict" method="post" enctype="multipart/form-data">
+                <label class="form-label small">Patient Name</label>
+                <input id="patientName" name="patient_name" class="form-control mb-2" placeholder="Enter patient name" required style="background:white;color:black;">
+
+                <label class="form-label small">X-ray Image</label>
+                <input id="fileInput" type="file" name="file" accept="image/*" class="form-control mb-2" required />
+
+                <div class="preview-wrap mb-2">
+                  <img id="preview" class="img-fluid rounded preview-img" src="{{ url_for('static', filename='images/placeholder-xray.png') }}" alt="preview" />
+                </div>
+
+                <button id="uploadBtn" type="submit" class="btn btn-primary w-100">
+                  <i class="bi bi-upload me-2"></i> Upload & Analyze
+                </button>
+              </form>
+
+              <!-- Inline prediction card -->
+              <div id="predictionCard" class="card mt-3 p-3 d-none">
+                <div class="d-flex justify-content-between align-items-start">
+                  <div>
+                    <div class="small muted">Last prediction</div>
+                    <div class="h5 mb-1 predLabel">—</div>
+                    <div class="small muted predPatient">Patient: —</div>
+                  </div>
+                  <div class="text-end">
+                    <div class="fw-bold predConfidence">—</div>
+                    <div class="small muted predTime">—</div>
+                    <a id="predictionDownload" class="btn btn-sm btn-outline-light mt-2" target="_blank">Download PDF</a>
+                  </div>
+                </div>
+                <button id="predictionViewBtn" class="btn btn-sm btn-primary mt-2">View Details</button>
+              </div>
+            </div>
+
+            <!-- compact help / links -->
+            <div class="card glass p-3">
+              <h6 class="mb-0">Resources</h6>
+              <ul class="list-unstyled small mt-2 muted">
+                <li><a class="link-light" href="#">Docs</a></li>
+                <li><a class="link-light" href="#">Model Info</a></li>
+                <li><a class="link-light" href="#">Export CSV</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- footer centered -->
+        <div class="footer muted small mt-4 text-center">© <span id="year"></span> X-ray AI • Built for clinical workflows</div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Detail modal -->
+  <div class="modal fade" id="detailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content p-3" style="background:#071423;color:white;">
+        <h4>Scan Details</h4>
+        <img id="detailImage" src="" class="img-fluid rounded mb-2" />
+        <p><strong>Scan ID:</strong> <span id="detailScan"></span></p>
+        <p><strong>Patient:</strong> <span id="detailPatient"></span></p>
+        <p><strong>Label:</strong> <span id="detailLabel"></span></p>
+        <p><strong>Confidence:</strong> <span id="detailConfidence"></span></p>
+        <p><strong>Inference time:</strong> <span id="detailInfer"></span> sec</p>
+        <p><strong>Date:</strong> <span id="detailTime"></span></p>
+
+        <a id="detailDownload" class="btn btn-outline-light" target="_blank">Download PDF</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- existing dashboard logic (keep your dashboard.js) -->
+  <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+
+  <!-- Small chart initializer to create a gradient main chart.
+       Your dashboard.js can call updateVolumeChart(data) to update it. -->
+  <script>
+    let volumeChart = null;
+    function createGradient(ctx, area) {
+      const grad = ctx.createLinearGradient(0, 0, 0, area.bottom);
+      grad.addColorStop(0, 'rgba(9,198,217,0.9)');
+      grad.addColorStop(0.4, 'rgba(9,198,217,0.4)');
+      grad.addColorStop(1, 'rgba(9,198,217,0.06)');
+      return grad;
+    }
+
+    function initVolumeChart(labels = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], values = [40,60,50,75,55,80,70]) {
+      const canvas = document.getElementById('volumeChart');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const area = canvas.getBoundingClientRect();
+      const gradient = createGradient(ctx, {bottom: area.bottom || 260});
+      if (volumeChart) volumeChart.destroy();
+      volumeChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Scans',
+            data: values,
+            fill: true,
+            backgroundColor: gradient,
+            borderColor: 'rgba(9,198,217,1)',
+            pointRadius: 3,
+            tension: 0.4,
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { display: false }, ticks: { color: '#cfeff2' } },
+            y: { ticks: { color: '#cfeff2' }, beginAtZero: true }
+          }
+        }
+      });
+    }
+
+    function updateVolumeChart(newLabels, newValues) {
+      if (!volumeChart) return initVolumeChart(newLabels, newValues);
+      volumeChart.data.labels = newLabels;
+      volumeChart.data.datasets[0].data = newValues;
+      volumeChart.update();
+    }
+
+    // init with placeholder data; later your JS can call updateVolumeChart(...)
+    window.addEventListener('load', ()=> initVolumeChart());
+  </script>
+</body>
+</html>
